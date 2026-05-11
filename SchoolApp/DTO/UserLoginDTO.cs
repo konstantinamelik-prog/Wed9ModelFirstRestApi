@@ -14,6 +14,6 @@ namespace SchoolApp.DTO
             "one digit, and one special character")]
         public string Password { get; init; } = string.Empty;
 
-        public bool KeepLoggedIn { get; init; }
+        //public bool KeepLoggedIn { get; init; }
     }
 }
