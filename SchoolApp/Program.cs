@@ -2,8 +2,9 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.IdentityModel.Tokens.Experimental;
 using Microsoft.OpenApi.Models;
+using SchoolApp.Configuration;
+using SchoolApp.Data;
 using SchoolApp.Helpers;
 using SchoolApp.Repositories;
 using SchoolApp.Security;
@@ -28,7 +29,7 @@ namespace SchoolApp
 
             var connString = builder.Configuration.GetConnectionString("DevConnection");
 
-            builder.Services.AddDbContext<Data.SchoolMvc9Context>(options =>
+            builder.Services.AddDbContext<SchoolMvc9Context>(options =>
                     options.UseSqlServer(connString));
 
             builder.Services.AddScoped<IUserService, UserService>();
@@ -39,8 +40,7 @@ namespace SchoolApp
 
             builder.Services.AddRepositories();
 
-
-            builder.Services.AddAutoMapper(cfg => cfg.AddProfile<Configuration.MapperConfig>());
+            builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MapperConfig>());
 
             var jwtSettings = builder.Configuration.GetSection("Jwt");
             builder.Services.AddAuthentication(options =>
@@ -54,7 +54,7 @@ namespace SchoolApp
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = true,
-                    ValidIssuer = jwtSettings["Issuer"],
+                    ValidIssuer = jwtSettings["Issuer"],
 
                     ValidateAudience = true,
                     ValidAudience = jwtSettings["Audience"],
@@ -107,6 +107,11 @@ namespace SchoolApp
 
             builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
             builder.Services.AddProblemDetails();
+
+            builder.Services.AddAuthorization(options =>
+            {
+                options.AddPolicy("VIEW_USERS", p => p.RequireClaim("capability", "VIEW_USERS"));
+            });
 
             var app = builder.Build();
 
